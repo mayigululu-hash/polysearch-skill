@@ -1,39 +1,28 @@
 # polysearch-skill
 
-**当前版本 v0.1.2** ｜ Current version: v0.1.2 ｜ [English](#english-英文说明)
+**给 AI agent 的搜索路由。让它知道什么活走内置搜索，什么活走搜索服务，什么活必须上浏览器。**
 
-配套 MCP：[mayigululu-hash/polysearch](https://github.com/mayigululu-hash/polysearch)（豆包搜索 + DeepSeek Search 聚合，配额尽自动切换）
+当前版本 v0.1.2 ｜ [English](#english-英文说明) ｜ License MIT
 
-一个给 AI agent 的**搜索路由 skill**。它不负责搜索本身，负责调度：什么活走内置搜索，什么活走搜索服务，什么活必须上浏览器。核心原则一句话：**免费的先用，特殊的走专门通道，点名了照办，换了通道要说一声。**
+## 为什么需要它
 
-## 它解决什么问题
+给 agent 接上搜索只是第一步，真用起来你会发现三件事：
 
-给 agent 接了搜索之后，真实使用里马上会遇到三个问题：
+1. 内置搜索有免费额度，用着用着就耗尽，agent 当场抓瞎
+2. 登录态内容、强反爬站点，任何搜索 API 都够不着，得上真浏览器
+3. 核实类请求（「这是真的吗」「信源打架」）需要多方交叉验证，搜一次就下结论必出错
 
-1. **内置搜索有免费额度**，用着用着就配额耗尽，agent 当场抓瞎
-2. **登录态内容、强反爬站点**，搜索 API 根本搜不到，得动浏览器
-3. **核实类请求**（「这是真的吗」「信源打架」）需要多方交叉验证，不能只搜一次
+三种活混在一起，agent 要么瞎选通道烧钱，要么卡死在一条断掉的通道上。
 
-这个 skill 把这些全部写成路由规则，agent 每次搜索先选路再执行。MCP 还没装也能用：路由自动退化为「内置 → 浏览器」，装上 polysearch MCP 后自动升级为五级阶梯。
+polysearch-skill 把选路逻辑写成规则。搜索请求进来，先选通道再执行，核心原则一句话：**免费的先用，特殊的走专门通道，点名了照办，换了通道要说一声。**
 
-## 路由阶梯（省钱序）
+## 三个特点
 
-```
-用户点名（用豆包搜/用deepseek搜/浏览器搜）→ 照办
-平台专门 skill/适配器（X、小红书、公众号……）→ 交给它们
-内置 WebSearch → 普通搜索默认
-polysearch MCP → 内置挂了/配额尽，或点名豆包/DeepSeek
-浏览器自动化 → 登录态、强反爬、页面交互，最后兜底
-```
+- **省钱序五级阶梯**。用户点名 → 平台专门 skill → 内置 WebSearch → polysearch MCP → 浏览器自动化。免费的先用，贵的兜底
+- **交叉核查模式**。「核实、求证、是真的吗、信源打架」触发。正反两方分头搜，输出一致点、冲突点、可信度倾向三段式，不替用户下最终结论
+- **切换报备**。凡走了非默认通道，回答末尾固定报一句「本次走的 polysearch（内置搜索额度已用完）」，用户心里有账
 
-两个设计值得单独说：
-
-- **交叉核查模式**：触发词「核实、求证、是真的吗、信源打架」。把问题拆成正反两方分头搜，输出一致点、冲突点、可信度倾向三段式，不替用户下最终结论
-- **切换报备**：凡走了非默认通道，回答末尾固定报一句「本次走的 polysearch（内置搜索额度已用完）」，让用户心里有账
-
-## 安装
-
-把 `SKILL.md` 所在目录拷进你的 skills 目录即可：
+## 30 秒安装
 
 ```bash
 git clone https://github.com/mayigululu-hash/polysearch-skill.git
@@ -45,49 +34,52 @@ cp -r polysearch-skill ~/.claude/skills/polysearch
 - ZCode：`~/.zcode/skills/`
 - 其他宿主：按各自的 skills 目录约定放置
 
-推荐搭配 [mayigululu-hash/polysearch](https://github.com/mayigululu-hash/polysearch) MCP 一起装，路由阶梯完整生效；不装也能用（退化为内置 + 浏览器）。
+## 路由阶梯
+
+```
+用户点名（用豆包搜/用deepseek搜/浏览器搜）→ 照办
+平台专门 skill/适配器（X、小红书、公众号……）→ 交给它们
+内置 WebSearch → 普通搜索默认
+polysearch MCP → 内置挂了/配额尽，或点名豆包/DeepSeek
+浏览器自动化 → 登录态、强反爬、页面交互，最后兜底
+```
+
+每一级怎么判定，SKILL.md 里有完整决策树，agent 拿到就知道怎么走。
+
+## 配套 MCP：把阶梯的第四级点亮
+
+skill 只管调度，搜索服务本身要靠 [polysearch](https://github.com/mayigululu-hash/polysearch) MCP 来接。它把豆包搜索（每月 500 次免费）和 DeepSeek Search（$0.75/千次）聚合成一个工具，配额尽或故障自动切换。**推荐搭配使用**，阶梯完整生效；不装 MCP 也能用，路由自动退化为「内置 → 浏览器」。
 
 ## 定制
 
-skill 里没有任何密钥和个人信息。建议你改两处让它更像自己的：
+skill 里没有任何密钥和个人信息。建议改两处让它更像自己的：
 
-1. **分流表**：把你宿主里装的专门 skill 写进「优先级 1」的说明里（文末附录有作者的示例格式）
-2. **报备话术**：切换报备那句话的格式可以按自己习惯改
+1. **分流表**。把你宿主里装的专门 skill 写进「优先级 1」的说明里，SKILL.md 文末附了作者的示例格式
+2. **报备话术**。切换报备那句话的格式，按自己的习惯改
 
 ---
 
 # English 英文说明
 
-A **search-routing skill** for AI agents. It does not search anything itself — it decides where each search should go: built-in web search, a hosted search API, or a real browser. One-line principle: **use the free ones first, route special content to dedicated tools, obey explicit requests, and always report when a non-default channel was used.**
+A **search-routing skill** for AI agents. It teaches the agent where each search should go: the host's built-in web search, a hosted search API, or a real browser. One-line principle: **use the free ones first, route special content to dedicated tools, obey explicit requests, and always report when a non-default channel was used.**
 
-## What problem it solves
+## Why
 
-Once your agent can search, three problems show up immediately:
+Hooking up search is step one. In real use you will hit three things:
 
-1. Built-in web search has free quotas that run out mid-task
-2. Login-walled sites and hard anti-bot pages can't be searched by any API — you need a browser
-3. Fact-check style requests ("is this true?", "sources conflict") need multi-angle cross-checking, not a single query
+- Built-in web search quotas run out mid-task, leaving the agent stranded
+- Login-walled sites and hard anti-bot pages are beyond any search API — they need a real browser
+- Fact-check requests ("is this true?", "sources conflict") need multi-angle cross-checking; one search and a verdict is a mistake
 
-This skill encodes all of it as routing rules. It degrades gracefully: without the [polysearch MCP](https://github.com/mayigululu-hash/polysearch), the ladder falls back to "built-in → browser"; install the MCP and the full five-tier ladder lights up.
+Mix all three and the agent either burns money on the wrong channel or stalls on a dead one. This skill encodes the routing as rules: every search picks a channel before it runs.
 
-## The ladder (cheapest first)
+## Highlights
 
-```
-User names a channel ("search with doubao/deepseek/the browser") → obey
-Dedicated platform skill/adapter (X, Xiaohongshu, WeChat articles...) → hand off
-Built-in WebSearch → default for ordinary searches
-polysearch MCP → built-in down / quota spent, or user names Doubao/DeepSeek
-Browser automation → login walls, anti-bot, page interaction; last resort
-```
+- **Cheapest-first, five-tier ladder**: user's explicit pick → dedicated platform skills → built-in WebSearch → polysearch MCP → browser automation
+- **Cross-check mode**: triggered by fact-check wording; splits the question into pro/contra queries, reports agreement / conflict / credibility-lean — never a final verdict on the user's behalf
+- **Channel reporting**: every non-default channel gets one fixed line at the end of the reply, so the user always knows the bill
 
-Two designs worth noting:
-
-- **Cross-check mode**: triggered by fact-check wording. Splits the question into pro/contra queries, then reports agreement / conflict / credibility-lean — never a final verdict on the user's behalf
-- **Channel reporting**: whenever a non-default channel was used, the reply ends with one fixed line, e.g. "This ran via polysearch (built-in search quota exhausted)", so the user always knows the bill
-
-## Install
-
-Copy the folder into your host's skills directory:
+## Quick install
 
 ```bash
 git clone https://github.com/mayigululu-hash/polysearch-skill.git
@@ -95,11 +87,27 @@ mkdir -p ~/.claude/skills
 cp -r polysearch-skill ~/.claude/skills/polysearch
 ```
 
-Claude Code: `~/.claude/skills/` or `.claude/skills/` in the project. ZCode: `~/.zcode/skills/`. Other hosts: follow their convention. Works standalone; pairs with the [polysearch MCP](https://github.com/mayigululu-hash/polysearch) for the full ladder.
+Claude Code: `~/.claude/skills/` or `.claude/skills/` in the project. ZCode: `~/.zcode/skills/`. Other hosts: follow their convention.
+
+## The ladder
+
+```
+User names a channel → obey
+Dedicated platform skill/adapter → hand off
+Built-in WebSearch → default for ordinary searches
+polysearch MCP → built-in down / quota spent, or user names Doubao/DeepSeek
+Browser automation → login walls, anti-bot, page interaction; last resort
+```
+
+The full decision tree ships in SKILL.md.
+
+## Companion MCP
+
+The skill routes; the [polysearch MCP](https://github.com/mayigululu-hash/polysearch) connects — Doubao Search (500 free calls/month) + DeepSeek Search ($0.75/1k) in one tool with automatic failover. Recommended together; without the MCP the ladder degrades gracefully to "built-in → browser".
 
 ## Customize
 
-No keys, no personal data inside. Two things you should edit to make it yours: the platform hand-off list (priority 1), and the channel-report phrasing. See the appendix in SKILL.md for the author's own hand-off table as a template.
+No keys, no personal data inside. Two edits make it yours: the platform hand-off list (priority 1 — the author's own table ships as an appendix in SKILL.md) and the channel-report phrasing.
 
 ## License
 
