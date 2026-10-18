@@ -2,7 +2,7 @@
 name: polysearch
 description: 搜索路由（Search Router）。多源搜索的总调度，省钱优先：普通搜索默认走宿主内置 WebSearch，内置不可用或配额耗尽才走 polysearch MCP（豆包免费额度→DeepSeek 自动降级），登录态/强反爬/页面交互走浏览器自动化。用户说「搜一下」「查一下」「联网搜」「帮我搜」「网上有没有」「最新消息」「用豆包搜」「用deepseek搜」，或说「核实一下」「这是真的吗」「信源打架」（交叉核查模式）时触发。各平台内容若有专门 skill，本 skill 不抢它们的活。
 metadata:
-  version: "1.0.0"
+  version: "0.1.2"
   author: "alchaincyf (花叔)"
   license: "MIT"
 ---

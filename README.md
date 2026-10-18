@@ -1,6 +1,6 @@
 # polysearch-skill
 
-**当前版本 v1.0.0** ｜ Current version: v1.0.0 ｜ [English](#english-英文说明)
+**当前版本 v0.1.2** ｜ Current version: v0.1.2 ｜ [English](#english-英文说明)
 
 配套 MCP：[mayigululu-hash/polysearch](https://github.com/mayigululu-hash/polysearch)（豆包搜索 + DeepSeek Search 聚合，配额尽自动切换）
 
