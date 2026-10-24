@@ -2,7 +2,7 @@
 
 **给 AI agent 的搜索路由。让它知道什么活走内置搜索，什么活走搜索服务，什么活必须上浏览器。**
 
-当前版本 v0.1.2 ｜ [English](#english-英文说明) ｜ License MIT
+当前版本 v0.1.3 ｜ [English](#english-英文说明) ｜ License MIT
 
 ## 为什么需要它
 
@@ -19,7 +19,7 @@ polysearch-skill 把选路逻辑写成规则。搜索请求进来，先选通道
 ## 三个特点
 
 - **省钱序五级阶梯**。用户点名 → 平台专门 skill → 内置 WebSearch → polysearch MCP → 浏览器自动化。免费的先用，贵的兜底
-- **交叉核查模式**。「核实、求证、是真的吗、信源打架」触发。正反两方分头搜，输出一致点、冲突点、可信度倾向三段式，不替用户下最终结论
+- **交叉核查模式**。「核实、求证、是真的吗、信源打架」触发。polysearch MCP 与浏览器两条异质通道各自跑正反两方查询，再交叉比对，输出一致点、冲突点、可信度倾向三段式，不替用户下最终结论；只查个概念的轻量核实不进此模式，按普通搜索走
 - **切换报备**。凡走了非默认通道，回答末尾固定报一句「本次走的 polysearch（内置搜索额度已用完）」，用户心里有账
 
 ## 30 秒安装
@@ -40,8 +40,8 @@ cp -r polysearch-skill ~/.claude/skills/polysearch
 用户点名（用豆包搜/用deepseek搜/浏览器搜）→ 照办
 平台专门 skill/适配器（X、小红书、公众号……）→ 交给它们
 内置 WebSearch → 普通搜索默认
-polysearch MCP → 内置挂了/配额尽，或点名豆包/DeepSeek
-浏览器自动化 → 登录态、强反爬、页面交互，最后兜底
+polysearch MCP → 内置挂了/配额尽，或点名豆包/DeepSeek，或交叉核查
+浏览器自动化 → 登录态、强反爬、页面交互，或交叉核查，最后兜底
 ```
 
 每一级怎么判定，SKILL.md 里有完整决策树，agent 拿到就知道怎么走。
@@ -76,7 +76,7 @@ Mix all three and the agent either burns money on the wrong channel or stalls on
 ## Highlights
 
 - **Cheapest-first, five-tier ladder**: user's explicit pick → dedicated platform skills → built-in WebSearch → polysearch MCP → browser automation
-- **Cross-check mode**: triggered by fact-check wording; splits the question into pro/contra queries, reports agreement / conflict / credibility-lean — never a final verdict on the user's behalf
+- **Cross-check mode**: triggered by fact-check wording; runs pro/contra queries through two heterogeneous channels (polysearch MCP + browser automation) and cross-compares them, reporting agreement / conflict / credibility-lean — never a final verdict on the user's behalf. Light single-fact lookups stay on the normal path
 - **Channel reporting**: every non-default channel gets one fixed line at the end of the reply, so the user always knows the bill
 
 ## Quick install
@@ -95,8 +95,8 @@ Claude Code: `~/.claude/skills/` or `.claude/skills/` in the project. ZCode: `~/
 User names a channel → obey
 Dedicated platform skill/adapter → hand off
 Built-in WebSearch → default for ordinary searches
-polysearch MCP → built-in down / quota spent, or user names Doubao/DeepSeek
-Browser automation → login walls, anti-bot, page interaction; last resort
+polysearch MCP → built-in down / quota spent, user names Doubao/DeepSeek, or cross-check mode
+Browser automation → login walls, anti-bot, page interaction, cross-check mode; last resort
 ```
 
 The full decision tree ships in SKILL.md.
